@@ -6,32 +6,30 @@ public class TurnBasedStack2 {
 
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-        Stack<Integer> LastHP = new Stack<>();
         Random randomizer = new Random();
+        Stack<Integer> LastHP = new Stack<>();
         Stack<Integer> JinguMasteryDao = new Stack<>();
+        Stack<Integer> backtrack = new Stack<>();
 
-        String playerName = "";
+        String playerName = "Qiann The Great";
         String botName = "Vinze And Friends";
 
         int playerHP = 1000;
-        int playerMaxHP = 4000;
+        int playerMaxHP = 1000;
         int botHP = 5000;
-        int botMaxHP = 10000;
+        int botMaxHP = 5000;
         int playerMinDmg = 100;
         int playerMaxDmg = 2000;
-        int botMinDmg = 210;
-        int botMaxDmg = 375;
+        int botMinDmg = 50;
+        int botMaxDmg = 75;
         int stunTurns = 0;
         int turnCount = 1;
 
-        int[] worldSavior = {0, 0}; 
+        int[] worldSavior = {0, 0};
 
         int attackCounter = 0;
         boolean auraSwordActive = false;
-
-        int consecutiveAttackCount = 0;
-
-        System.out.println("Your name is?" + playerName + ":");
+        int consecutiveAttackCount = 0; 
         
         System.out.println("Choose a Class Sir " + playerName + ":");
         System.out.println("1. Knight");
@@ -79,19 +77,15 @@ public class TurnBasedStack2 {
         System.out.println("You encountered an enemy!");
 
         while (playerHP > 0 && botHP > 0) {
-            if (playerHP < 0) {
-                playerHP = 0;
-            }
-            if (botHP < 0) {
-                botHP = 0;
-            }
+            if (playerHP < 0) playerHP = 0;
+            if (botHP < 0) botHP = 0;
 
             System.out.println("\n    Turn " + turnCount + "   ");
 
             if (worldSavior[0] > 0) {
                 worldSavior[0]--;
                 if (worldSavior[0] == 0) {
-                    worldSavior[1] = 2; 
+                    worldSavior[1] = 2;
                     System.out.println("World Savior effect faded! Cooldown begins.");
                 }
             }
@@ -109,19 +103,8 @@ public class TurnBasedStack2 {
                 LastHP.push(heal);
                 System.out.println("World Tree Blessing healed you for " + heal + " HP.");
             }
-            
-            if (botHP <= botMaxHP * 0.40 && botHP < botMaxHP) {
-                int healBot = randomizer.nextInt(51) + 100;
-                playerHP += healBot;
-                if (botHP > botMaxHP) {
-                    healBot -= (botHP - botMaxHP);
-                    botHP = botMaxHP;
-                }
-                LastHP.push(healBot);
-                System.out.println("Enemy has triggered his passive " + healBot + " HP.");
-            }
 
-            if (turnCount % 2 == 1) { 
+            if (turnCount % 2 == 1) {
                 if (stunTurns > 0) {
                     System.out.println("Enemy is stunned! You get another turn.");
                     stunTurns--;
@@ -149,11 +132,20 @@ public class TurnBasedStack2 {
 
                     if (consecutiveAttackCount == 4) {
                         int baseDmg = randomizer.nextInt(playerMaxDmg - playerMinDmg + 1) + playerMinDmg;
-                        int amplifiedDmg = baseDmg + 1000;
+                        int amplifiedDmg = baseDmg + 1000; 
                         if (auraSwordActive) {
                             amplifiedDmg += 500;
                         }
+                        backtrack.push(botHP);
                         botHP -= amplifiedDmg;
+
+                        if (facelessVoidBacktrack(randomizer, 0.20)) {
+                            botHP = backtrack.pop();
+                            System.out.println("Faceless Void's Backtrack activated! The enemy evaded the attack and restored its previous HP!");
+                        } else {
+                            if (!backtrack.isEmpty()) backtrack.pop();
+                        }
+
                         JinguMasteryDao.push(amplifiedDmg);
                         System.out.println("JinguMasteryDao activated! Amplified Attack dealt " + amplifiedDmg + " damage to the enemy!");
                         consecutiveAttackCount = 0;
@@ -162,7 +154,16 @@ public class TurnBasedStack2 {
                         if (auraSwordActive) {
                             playerDmg += 500;
                         }
+                        backtrack.push(botHP);
                         botHP -= playerDmg;
+
+                        if (facelessVoidBacktrack(randomizer, 0.20)) {
+                            botHP = backtrack.pop();
+                            System.out.println("Faceless Void's Backtrack activated! The enemy evaded the attack and restored its previous HP!");
+                        } else {
+                            if (!backtrack.isEmpty()) backtrack.pop();
+                        }
+
                         System.out.println("You dealt " + playerDmg + " damage to the enemy.");
                         if (consecutiveAttackCount < 4) {
                             System.out.println("[" + (4 - consecutiveAttackCount) + " consecutive Attacks left to activate JinguMasteryDao!]");
@@ -171,27 +172,27 @@ public class TurnBasedStack2 {
                 } else if (in.equalsIgnoreCase("Stun")) {
                     System.out.println("You stunned the enemy for 2 turns!");
                     stunTurns = 2;
-                    consecutiveAttackCount = 0;
+                    consecutiveAttackCount = 0; 
                 } else if (in.equalsIgnoreCase("Dance")) {
                     System.out.println("You performed a dance. It's not very effective...");
-                    consecutiveAttackCount = 0;
+                    consecutiveAttackCount = 0; 
                 } else if (in.equalsIgnoreCase("Skip")) {
                     System.out.println("You skipped your turn.");
-                    consecutiveAttackCount = 0;
+                    consecutiveAttackCount = 0; 
                 } else if (in.equalsIgnoreCase("World Savior")) {
                     if (worldSavior[0] == 0 && worldSavior[1] == 0) {
-                        worldSavior[0] = 3; 
+                        worldSavior[0] = 3;
                         System.out.println("World Savior activated! Blocking enemy attacks for 3 turns.");
                     } else {
                         System.out.println("Skill is on cooldown or already active.");
                     }
-                    consecutiveAttackCount = 0;
+                    consecutiveAttackCount = 0; 
                 } else {
                     System.out.println("Invalid action. You lost your turn.");
-                    consecutiveAttackCount = 0;
+                    consecutiveAttackCount = 0; 
                 }
 
-            } else { 
+            } else {
                 if (stunTurns > 0) {
                     System.out.println("Bot is stunned and skips its turn!");
                     stunTurns--;
@@ -217,13 +218,19 @@ public class TurnBasedStack2 {
             turnCount++;
         }
 
-        
         if (playerHP <= 0 && botHP <= 0) {
             System.out.println("\nIt's a draw! Both you and the enemy have fallen!");
         } else if (playerHP <= 0) {
             System.out.println("\nYou have been defeated by " + botName + "!");
         } else if (botHP <= 0) {
             System.out.println("\nCongratulations, " + playerName + "! You defeated " + botName + "!");
+        }
+    }
+
+    static boolean facelessVoidBacktrack(Random rng, double chance) {
+        return rng.nextDouble() < chance;
+    }
+}
         }
     }
 }
